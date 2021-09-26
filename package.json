@@ -1,19 +1,22 @@
 {
   "name": "@lzptec/fast-ipc",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Fast & simple IPC (Inter-Process Communication) server/client written on native net module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "types": "index.d.ts",
   "type": "module",
   "scripts": {
-    "prepare": "npm run build",
+    "prepare": "rm -rf ./dist && npm run build",
     "test": "npm run prepare && ava test/test.js",
-    "ts-types": "tsc --emitDeclarationOnly --outDir dist",
+    "ts-types": "tsc --emitDeclarationOnly --outDir ./",
     "build": "npm run build:esm & npm run build:cjs & npm run ts-types",
     "build:esm": "esbuild --minify --target=es2019 --platform=node src/index.ts --outdir=dist --format=esm",
     "build:cjs": "esbuild --minify --target=es2019 --platform=node src/index.ts --outdir=dist --format=cjs --out-extension:.js=.cjs"
   },
+  "files": [
+    "dist"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/tripodsgames/fast-ipc.git"
@@ -28,7 +31,7 @@
     "lightweight",
     "socket"
   ],
-  "author": "scrwdrv",
+  "author": "lzptec",
   "license": "MIT",
   "homepage": "https://github.com/tripodsgames/fast-ipc#readme",
   "devDependencies": {
