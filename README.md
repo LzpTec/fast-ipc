@@ -1,17 +1,17 @@
-# fast-ipc
+# @lzptec/fast-ipc
 Fast & simple IPC (Inter-Process Communication) server/client build on native net module
 
 ## Installation
 
 ```sh
-npm i fast-ipc
+npm i @lzptec/fast-ipc
 ```
 
 ## Usage
 
 ### Server
 ```js
-import { server } from 'fast-ipc';
+import { server } from '@lzptec/fast-ipc';
 
 const ipcServer =
     new server('example')
@@ -33,7 +33,7 @@ const ipcServer =
 
 ### Client
 ```js
-import { client } from 'fast-ipc';
+import { client } from '@lzptec/fast-ipc';
 
 const ipcClinet = new client('example');
 

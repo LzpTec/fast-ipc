@@ -1,5 +1,5 @@
 {
-  "name": "fast-ipc",
+  "name": "@lzptec/fast-ipc",
   "version": "2.0.0",
   "description": "Fast & simple IPC (Inter-Process Communication) server/client written on native net module",
   "main": "dist/index.cjs",
@@ -15,7 +15,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/scrwdrv/fast-ipc.git"
+    "url": "git+https://github.com/tripodsgames/fast-ipc.git"
   },
   "engines": {
     "node": ">=12.0.0"
@@ -28,11 +28,8 @@
     "socket"
   ],
   "author": "scrwdrv",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/scrwdrv/fast-ipc/issues"
-  },
-  "homepage": "https://github.com/scrwdrv/fast-ipc#readme",
+  "license": "MIT",
+  "homepage": "https://github.com/tripodsgames/fast-ipc#readme",
   "devDependencies": {
     "@ava/typescript": "^2.0.0",
     "@types/node": "^12.12.21",
