@@ -1,6 +1,6 @@
 {
   "name": "@lzptec/fast-ipc",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "description": "Fast & simple IPC (Inter-Process Communication) server/client written on native net module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
