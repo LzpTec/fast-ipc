@@ -1,27 +1,49 @@
 import { fast as uuid } from 'fast-unique-id';
 import * as fs from 'fs';
 import * as net from 'net';
+import * as path from 'path';
 
 type RequestHandler = (data: any) => any | Promise<any>;
 type PromiseHandler = { resolve: (res: any) => void, reject: (err: any) => void };
 
-export interface serverConfig {
-    onError?: (err: unknown) => void;
+export interface ServerConfig {
+    onError: (err: unknown) => void;
     onClose?: () => void;
+    socketRoot: string;
+    namespace: string;
 }
 
-export interface clientConfig {
-    onError?: (err: unknown) => void;
-    timeout?: number;
+export interface ClientConfig {
+    onError: (err: unknown) => void;
+    timeout: number;
+    socketRoot: string;
+    namespace: string;
 }
+
+const defaultServerConfig: ServerConfig = {
+    onError: (err) => { throw err; },
+    socketRoot: "/tmp/",
+    namespace: "fast-ipc."
+};
+
+const defaultClientConfig: ClientConfig = {
+    onError: (err) => { throw err; },
+    socketRoot: "/tmp/",
+    namespace: "fast-ipc.",
+    timeout: 2000
+};
 
 export class server {
-    #eventListeners: { [event: string]: RequestHandler; } = {};
-    #config?: serverConfig;
+    readonly #eventListeners: { [event: string]: RequestHandler; } = {};
+    readonly #config: ServerConfig;
+    readonly #serverPath: string;
 
-    constructor(serverName: string, config?: serverConfig) {
-        this.#config = config;
-        try { fs.unlinkSync('\\\\?\\pipe\\' + serverName) } catch (err) { }
+    constructor(serverName: string, config?: Partial<ServerConfig>) {
+        this.#config = Object.assign({}, defaultServerConfig, config);
+        this.#serverPath = path.join(this.#config.socketRoot, this.#config.namespace + serverName);
+        try {
+            fs.unlinkSync(this.#serverPath);
+        } catch (err) { }
         this.#createServer(serverName);
     }
 
@@ -75,10 +97,7 @@ export class server {
             socket
                 .on('data', parseChunk)
                 .on('error', (err) => {
-                    if (this.#config?.onError)
-                        return this.#config.onError(err);
-
-                    throw err;
+                    return this.#config.onError(err);
                 })
                 .on('close', () => {
                     socket.removeAllListeners();
@@ -88,28 +107,20 @@ export class server {
 
         })
             .on('error', err => {
-                if (this.#config?.onError)
-                    return this.#config.onError(err);
-
-                throw err;
+                return this.#config.onError(err);
             })
             .on('close', () => {
                 ipcServer.removeAllListeners();
                 setTimeout(() => this.#createServer(serverName), 1000);
-                const err = `ipc server ${serverName} closed`;
-
                 if (this.#config?.onClose)
                     return this.#config.onClose();
 
-                if (this.#config?.onError)
-                    return this.#config.onError(err);
-
-                throw err;
+                return this.#config.onError(`ipc server ${serverName} closed`);
             })
-            .listen('\\\\?\\pipe\\' + serverName);
+            .listen(this.#serverPath);
 
         process.on("exit", () => {
-            try { fs.unlinkSync('\\\\?\\pipe\\' + serverName) } catch (err) { }
+            try { fs.unlinkSync(this.#serverPath) } catch (err) { }
         });
     }
 
@@ -120,15 +131,18 @@ export class server {
 }
 
 export class client {
-    #ipcClient?: net.Socket;
-    #resMap: { [id: string]: PromiseHandler } = {};
-    #backlogs: [string, any, PromiseHandler][] = [];
-    #config?: clientConfig;
-    #connected: boolean = false;
-    #now = Date.now();
+    readonly #resMap: { [id: string]: PromiseHandler } = {};
+    readonly #backlogs: [string, any, PromiseHandler][] = [];
+    readonly #config: ClientConfig;
+    readonly #now = Date.now();
+    readonly #serverPath: string;
 
-    constructor(serverName: string, config?: clientConfig) {
-        this.#config = config;
+    #connected: boolean = false;
+    #ipcClient?: net.Socket;
+
+    constructor(serverName: string, config?: Partial<ClientConfig>) {
+        this.#config = Object.assign({}, defaultClientConfig, config);
+        this.#serverPath = path.join(this.#config.socketRoot, this.#config.namespace + serverName);
         this.#connect(serverName);
     }
 
@@ -167,7 +181,7 @@ export class client {
             } else previousData += data;
         };
 
-        this.#ipcClient = net.createConnection('\\\\?\\pipe\\' + serverName, () => {
+        this.#ipcClient = net.createConnection(this.#serverPath, () => {
             this.#connected = true;
             if (this.#backlogs.length > 0) {
                 for (let i = this.#backlogs.length; i--;) {
@@ -178,7 +192,7 @@ export class client {
             }
         })
             .on('error', (err) => {
-                if (Date.now() - this.#now <= (this.#config?.timeout ?? 2000))
+                if (Date.now() - this.#now <= this.#config.timeout)
                     return;
 
                 if (this.#config?.onError)
