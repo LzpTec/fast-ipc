@@ -1,8 +1,9 @@
-import { fast as uuid } from 'fast-unique-id';
 import * as fs from 'fs';
+import hyperid from 'hyperid';
 import * as net from 'net';
 import * as path from 'path';
 
+const uuid = hyperid({ fixedLength: true });
 type RequestHandler = (data: any) => any | Promise<any>;
 type PromiseHandler = { resolve: (res: any) => void, reject: (err: any) => void };
 
@@ -50,7 +51,7 @@ export class server {
     #createServer(serverName: string) {
         const ipcServer = net.createServer((socket: net.Socket) => {
             const parse = async (data: string) => {
-                const stringArray = data.slice(18).split('⚑');
+                const stringArray = data.slice(33).split('⚑');
 
                 const handler = this.#eventListeners[stringArray[0]];
                 if (!handler)
@@ -60,9 +61,9 @@ export class server {
                 try {
                     const body = JSON.parse(stringArray.slice(1)[0]);
                     const response = await handler(body);
-                    socketData = { i: data.slice(0, 18), e: null, r: response };
+                    socketData = { i: data.slice(0, 33), e: null, r: response };
                 } catch (err) {
-                    socketData = { i: data.slice(0, 18), e: err, r: null };
+                    socketData = { i: data.slice(0, 33), e: err, r: null };
                 } finally {
                     if (socket.writable)
                         socket.write(JSON.stringify(socketData) + '⚑');

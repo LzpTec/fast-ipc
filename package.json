@@ -45,6 +45,6 @@
     "typescript": "^4.4.3"
   },
   "dependencies": {
-    "fast-unique-id": "^1.1.1"
+    "hyperid": "^2.3.1"
   }
 }
