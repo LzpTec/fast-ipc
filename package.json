@@ -4,15 +4,15 @@
   "description": "Fast & simple IPC (Inter-Process Communication) server/client written on native net module",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
-  "types": "index.d.ts",
+  "types": "./dist/index.d.ts",
   "type": "module",
   "scripts": {
     "prepare": "rm -rf ./dist && npm run build",
     "test": "npm run prepare && ava test/test.js",
-    "ts-types": "tsc --emitDeclarationOnly --outDir ./",
+    "ts-types": "tsc --emitDeclarationOnly --outDir ./dist",
     "build": "npm run build:esm & npm run build:cjs & npm run ts-types",
-    "build:esm": "esbuild --target=es2019 --platform=node src/index.ts --outdir=dist --format=esm",
-    "build:cjs": "esbuild --target=es2019 --platform=node src/index.ts --outdir=dist --format=cjs --out-extension:.js=.cjs"
+    "build:esm": "esbuild --target=es2019 --platform=node src/*.ts --outdir=dist --format=esm",
+    "build:cjs": "esbuild --target=es2019 --platform=node src/*.ts --outdir=dist --format=cjs --out-extension:.js=.cjs"
   },
   "files": [
     "dist",

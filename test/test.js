@@ -1,16 +1,16 @@
 import test from 'ava';
-import * as ipc from '../dist/index.js';
+import { client, server } from '../dist/index.js';
 
-const server = new ipc.server('log'),
-    client = new ipc.client('log');
+const serverInstance = new server('log'),
+    clientInstance = new client('log');
 
 test('data', async t => {
-    server.on('123', (d) => {
+    serverInstance.on('123', (d) => {
         t.deepEqual(d, { data: 'test' });
         return 123;
     });
 
-    await client.send('123', { data: 'test' })
+    await clientInstance.send('123', { data: 'test' })
         .then(response => {
             t.deepEqual(response, 123);
             t.pass();
@@ -21,12 +21,12 @@ test('data', async t => {
 });
 
 test('error', async t => {
-    server.on('testError', (d) => {
+    serverInstance.on('testError', (d) => {
         t.deepEqual(d, { data: 'test' });
         throw `Error`;
     });
 
-    await client.send('testError', { data: 'test' })
+    await clientInstance.send('testError', { data: 'test' })
         .then(response => {
             t.fail("Expected an error, got a response instead: " + response);
         })
